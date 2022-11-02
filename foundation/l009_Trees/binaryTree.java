@@ -650,4 +650,74 @@ public class binaryTree {
 
         return left + right + 1;
     }
+
+    // 968. Binary Tree Cameras
+    // If child returns -1, then parent have to install camera.
+    // If Child returns 0, it means child has a camera
+    // If Child return 1, it means child is covered by any other camera.
+    public int totalCameras = 0;
+
+    public int getMinCameraCover(Node root) {
+        if (root == null)
+            return 1;
+
+        int leftChild = getMinCameraCover(root.left);
+        int rightChild = getMinCameraCover(root.right);
+
+        if (leftChild == -1 || rightChild == -1) {
+            totalCameras++;
+            return 0;
+        }
+
+        if (leftChild == 0 || rightChild == 0)
+            return 1;
+
+        return -1;
+    }
+
+    public int minCameraCover(Node root) {
+        if (getMinCameraCover(root) == -1)
+            totalCameras++;
+
+        return totalCameras;
+    }
+
+
+    // 103. Binary Tree Zigzag Level Order Traversal
+    public List<List<Integer>> zigzagLevelOrder(Node root) {
+        List<List<Integer>> ans = new ArrayList<>();
+        if(root == null)
+            return ans;
+        
+        LinkedList<Node> que = new LinkedList<>();
+        LinkedList<Node> st = new LinkedList<>();
+        
+        que.addLast(root);
+        int level = 0;
+        while(que.size() != 0) {
+            int size = que.size();
+            List<Integer> innerAns = new ArrayList<>();
+            while(size-- > 0) {
+                Node rm = que.removeFirst();
+                innerAns.add(rm.data);
+                if(level % 2 == 0) {
+                    if(rm.left != null)
+                        st.addFirst(rm.left);
+                    if(rm.right != null)
+                        st.addFirst(rm.right);
+                } else {
+                    if(rm.right != null)
+                        st.addFirst(rm.right);
+                    if(rm.left != null)
+                        st.addFirst(rm.left);
+                }
+            }
+            level++;
+            ans.add(innerAns);
+            while(st.size() != 0) 
+                que.addLast(st.removeFirst());
+        }
+        
+        return ans;
+    }
 }

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 public class GenricTree {
 
@@ -173,17 +174,16 @@ public class GenricTree {
         return res;
     }
 
-
     // Are Trees Mirror In Shape
     public static boolean areMirror01(Node n1, Node n2) {
-        if(n1.children.size() != n2.children.size())
+        if (n1.children.size() != n2.children.size())
             return false;
 
         boolean res = true;
         int size = n1.children.size();
-        for(int i = 0; i < n1.children.size(); i++) 
+        for (int i = 0; i < n1.children.size(); i++)
             res = res && areMirror01(n1.children.get(i), n2.children.get(size - 1 - i));
-        
+
         return res;
     }
 
@@ -253,4 +253,23 @@ public class GenricTree {
             node.children.remove(i);
         }
     }
+
+    // Level-order Of Generic Tree
+    public static void levelOrder(Node node) {
+        LinkedList<Node> que = new LinkedList<>(); // removeFirst, addLast.
+        que.addLast(node);
+        while (que.size() != 0) {
+            int size = que.size(); // current level size.
+            while (size-- > 0) {
+                Node rn = que.removeFirst();
+                System.out.print(rn.data + " ");
+                for (Node child : rn.children) {
+                    que.addLast(child);
+                }
+            }
+        }
+        System.out.print(".");
+    }
+
+    
 }

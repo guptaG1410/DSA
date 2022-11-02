@@ -351,4 +351,8 @@ public class Arrays {
         System.out.println(aggCows(arrr, arrr.length, 3));
     }
 
+    public static Object asList(binaryTree.Node node) {
+        return null;
+    }
+
 }
