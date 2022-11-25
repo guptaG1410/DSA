@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 public class graph {
     public static class Edge {
@@ -33,8 +34,9 @@ public class graph {
         addEdge(graph, 4, 6, 8);
         addEdge(graph, 5, 6, 3);
 
-        boolean[] vis = new boolean[N];
-        preorder(graph, 0, vis, 0, "");
+        // boolean[] vis = new boolean[N];
+        // preorder(graph, 0, vis, 0, "");
+        printBFSPath(graph);
     }
 
     // ---------------Addition of Edge--------------
@@ -299,6 +301,206 @@ public class graph {
         }
 
         return size + 1;
+    }
+
+    // ------------------- Hamiltonian Path And Cycle ------------------
+    // Hamiltonian Path in an undirected graph is a path that visits each vertex
+    // exactly once.
+    public static void findHamiltonianPathNCycle(ArrayList<Edge>[] graph, int src) {
+        getHamPathNCycle(graph, src, "", src, 0, new boolean[graph.length]);
+    }
+
+    public static void getHamPathNCycle(ArrayList<Edge>[] graph, int src, String psf, int orgSrc, int edgeCount,
+            boolean[] vis) {
+        if (edgeCount == graph.length - 1) {
+            int idx = findEdge(graph, src, orgSrc);
+            if (idx != -1)
+                System.out.println("Cycle exists :" + psf + src);
+            else
+                System.out.println("Cycle not exists :" + psf + src);
+
+            return;
+        }
+
+        vis[src] = true;
+        for (Edge e : graph[src]) {
+            if (!vis[e.nbr])
+                getHamPathNCycle(graph, e.nbr, psf + src, orgSrc, edgeCount++, vis);
+        }
+
+        vis[src] = false;
+    }
+
+    // ------------ Cycle dectection in Graph with BFS -------------
+    public static void bfs(ArrayList<Edge>[] graph, int src, int dest) {
+        LinkedList<Integer> que = new LinkedList<>();
+        boolean[] vis = new boolean[graph.length];
+
+        boolean isCyclePresent = false;
+        int shortestPath = -1;
+
+        que.addLast(src);
+        int level = 0;
+        while (que.size() != 0) {
+            int size = que.size();
+            while (size-- > 0) {
+                int rmvtx = que.removeFirst();
+                // Cycle Detection
+                if (vis[rmvtx]) {
+                    isCyclePresent = true;
+                    continue;
+                }
+                if (rmvtx == dest)
+                    shortestPath = level;
+
+                vis[rmvtx] = true;
+                for (Edge e : graph[rmvtx])
+                    if (!vis[e.nbr])
+                        que.addLast(e.nbr);
+            }
+            level++;
+        }
+    }
+
+    // ------------ Detect Cycle -------------
+    public static void cycleDetection(ArrayList<Edge>[] graph) {
+        int N = graph.length;
+        boolean[] vis = new boolean[N];
+        boolean cycle = false;
+        for (int i = 0; i < N; i++) {
+            if (!vis[i])
+                cycle = cycle || cycleDetection(graph, i, vis);
+        }
+        System.out.println(cycle);
+    }
+
+    public static boolean cycleDetection(ArrayList<Edge>[] graph, int src, boolean[] vis) {
+        LinkedList<Integer> que = new LinkedList<>();
+        que.addLast(src);
+
+        while (que.size() != 0) {
+            int size = que.size();
+            while (size-- > 0) {
+                int rvtx = que.removeFirst();
+                if (vis[rvtx])
+                    return true;
+                vis[rvtx] = true;
+                for (Edge e : graph[rvtx])
+                    if (!vis[e.nbr])
+                        que.addLast(e.nbr);
+            }
+        }
+
+        return false;
+    }
+
+    // ---------- Print path using BFS --------------
+    public static class BFS_Pair {
+        int vtx = 0;
+        String psf = "";
+        int wsf = 0;
+
+        BFS_Pair(int vtx, String psf, int wsf) {
+            this.vtx = vtx;
+            this.psf = psf;
+            this.wsf = wsf;
+        }
+    }
+
+    public static void printBFSPath(ArrayList<Edge>[] graph) {
+        boolean[] vis = new boolean[graph.length];
+        for (int i = 0; i < graph.length; i++) {
+            if (vis[i])
+                continue;
+
+            LinkedList<BFS_Pair> que = new LinkedList<>();
+            que.addLast(new BFS_Pair(i, i + "", 0));
+
+            while (que.size() != 0) {
+                int size = que.size();
+                while (size-- > 0) {
+                    BFS_Pair rmvrtx = que.removeFirst();
+                    if (vis[rmvrtx.vtx])
+                        continue;
+
+                    System.out.println(rmvrtx.vtx + " --> " + rmvrtx.psf + "@" + rmvrtx.wsf);
+                    vis[rmvrtx.vtx] = true;
+                    for (Edge e : graph[rmvrtx.vtx])
+                        if (!vis[e.nbr])
+                            que.addLast(new BFS_Pair(e.nbr, rmvrtx.psf + e.nbr, rmvrtx.wsf + e.weight));
+                }
+            }
+        }
+    }
+
+    // Spread of Infection------------
+    public static int getInfected(ArrayList<Edge>[] graph, int src, int givenDays, boolean[] vis) {
+        LinkedList<Integer> que = new LinkedList<>();
+        int infectedCount = 0, day = 1;
+        que.add(src);
+
+        while (que.size() != 0) {
+            int size = que.size();
+            if (day > givenDays)
+                break;
+
+            while (size-- > 0) {
+                int rmvtx = que.removeFirst();
+                if (vis[rmvtx])
+                    continue;
+
+                vis[rmvtx] = true;
+                infectedCount++;
+                for (Edge e : graph[rmvtx])
+                    if (!vis[e.nbr])
+                        que.addLast(e.nbr);
+            }
+            day++;
+        }
+        return infectedCount;
+    }
+
+    // ---------------- is Graph Bipartite ----------
+    public static boolean bipartite(ArrayList<Edge>[] graph, int src, int[] vis) {
+        LinkedList<Integer> que = new LinkedList<>();
+        que.addLast(src);
+
+        int color = 0; // 0 : set 1 (red), 1: set 2 (green)
+        boolean cycle = false, isbipartite = true;
+        while (que.size() != 0) {
+            int size = que.size();
+            while (size-- > 0) {
+                int rvtx = que.removeFirst();
+                if (vis[rvtx] != -1) { // cycle
+                    cycle = true;
+                    if (vis[rvtx] != color) { // conflict
+                        isbipartite = false;
+                        break;
+                    }
+                    continue; // not any kind of conflict
+                }
+                vis[rvtx] = color;
+                for (Edge e : graph[rvtx])
+                    if (vis[e.nbr] == -1)
+                        que.addLast(e.nbr);
+            }
+            color = (color + 1) % 2;
+            if (!isbipartite)
+                break;
+        }
+        return isbipartite;
+    }
+
+    public static boolean bipartite(ArrayList<Edge>[] graph) {
+        int[] vis = new int[graph.length];
+        Arrays.fill(vis, -1);
+
+        boolean isbipartite = true;
+        for (int i = 0; i < graph.length; i++) {
+            if (vis[i] == -1)
+                isbipartite = isbipartite && bipartite(graph, i, vis);
+        }
+        return isbipartite;
     }
 
     public static void main(String[] args) {
